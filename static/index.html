@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="./pure-min.css" />
+    <style>
+        html,
+        body {
+            padding: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas></canvas>
+    <form class="pure-form pure-form-aligned">
+        <div class="pure-control-group">
+            <label for="agent-creation-duration"> Agent Creation Duration </label>
+            <input id="agent-creation-duration" type="text" value="2"></input>
+        </div>
+
+        <div class="pure-control-group">
+            <label for="agent-target-count"> Agent Target Count </label>
+            <input id="agent-target-count" type="text" value="20"></input>
+        </div>
+
+        <div class="pure-control-group">
+            <label for="agent-life-duration"> Agent Life Duration </label>
+            <input id="agent-life-duration" type="text" value="4"></input>
+        </div>
+
+        <div class="pure-control-group">
+            <label for="repopulate-interval"> Repopulate Interval </label>
+            <input id="repopulate-interval" type="text" value="2"></input>
+        </div>
+
+        <div class="pure-control-group">
+            <label for="log-interval"> Log Interval </label>
+            <input id="log-interval" type="text" value="0.2"></input>
+        </div>
+
+        <button type="button" class="pure-button pure-button-primary" id="reconfigure"> GO </button>
+    </form>
+
+    <script src="../dist/bundle.js"></script>
+    <script src="./annotations.js"></script>
+</body>
+
+</html>
