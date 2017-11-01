@@ -17284,12 +17284,7 @@ function simulate(duration, callback) {
     var clock = new clock_1.Clock();
     var log = function () { return callback(clock.elapsed, environment.idle.length, environment.leased.length, environment.creating.length); };
     var kill = function (id) {
-        if (environment.isIdle(id) && environment.totalCount() <= constants_1.Constants.lower_bound_count()) {
-            environment.remove(id);
-        }
-        else {
-            environment.remove(id);
-        }
+        environment.remove(id);
     };
     var spawn = function () {
         var id = environment_1.getId();
@@ -17300,7 +17295,7 @@ function simulate(duration, callback) {
         });
     };
     var topOff = function () {
-        for (var i = environment.totalCount(); i < constants_1.Constants.lower_bound_count(); i++) {
+        for (var i = environment.idleCount + environment.creatingCount; i < constants_1.Constants.lower_bound_count(); i++) {
             spawn();
         }
     };
@@ -17488,9 +17483,27 @@ var Environment = /** @class */ (function () {
         this.idle = [];
         this.creating = [];
     }
-    Environment.prototype.totalCount = function () {
-        return this.leased.length + this.idle.length;
-    };
+    Object.defineProperty(Environment.prototype, "leasedCount", {
+        get: function () {
+            return this.leased.length;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Environment.prototype, "idleCount", {
+        get: function () {
+            return this.idle.length;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Environment.prototype, "creatingCount", {
+        get: function () {
+            return this.creating.length;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Environment.prototype.addToPool = function (id) {
         this.idle.push(id);
     };

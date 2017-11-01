@@ -10,8 +10,16 @@ export class Environment {
     idle: Id[] = [];
     creating: Id[] = [];
 
-    totalCount(): number {
-        return this.leased.length + this.idle.length
+    get leasedCount(): number {
+        return this.leased.length;
+    }
+
+    get idleCount(): number {
+        return this.idle.length;
+    }
+
+    get creatingCount(): number {
+        return this.creating.length;
     }
 
     addToPool(id: Id) {

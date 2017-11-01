@@ -16,11 +16,7 @@ function simulate(duration: number, callback: Callback) {
         environment.creating.length);
 
     const kill = (id) => {
-        if (environment.isIdle(id) && environment.totalCount() <= Constants.lower_bound_count()) {
-            environment.remove(id)
-        } else {
-            environment.remove(id)
-        }
+        environment.remove(id)
     }
 
     const spawn = () => {
@@ -35,7 +31,7 @@ function simulate(duration: number, callback: Callback) {
     };
 
     const topOff = () => {
-        for (let i = environment.totalCount(); i < Constants.lower_bound_count(); i++) {
+        for (let i = environment.idleCount + environment.creatingCount; i < Constants.lower_bound_count(); i++) {
             spawn();
         }
     };
