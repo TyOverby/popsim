@@ -4,46 +4,75 @@
 <head>
     <link rel="stylesheet" href="./pure-min.css" />
     <style>
-        html,
-        body {
-            padding: 20px;
+        #container {
+            width: 100vw;
+            max-width: 100vw;
+            display: grid;
+
+            grid-template-columns: auto 200px;
+            grid-template-rows: auto;
+            grid-gap: 10px;
+        }
+
+        label, input[type="checkbox"] {
+            margin-top: 15px !important;
+        }
+
+        #reconfigure {
+            margin-top: 10px;
+            width: 187px;
+        }
+
+        canvas {
+            width: auto;
+            height: auto;
         }
     </style>
 </head>
 
 <body>
-    <canvas></canvas>
-    <form class="pure-form pure-form-aligned">
-        <div class="pure-control-group">
+    <div id="container">
+        <div id="canvas-holder">
+            <canvas></canvas>
+        </div>
+        <form class="pure-form pure-form-stacked">
             <label for="agent-creation-duration"> Agent Creation Duration </label>
             <input id="agent-creation-duration" type="text" value="2"></input>
-        </div>
 
-        <div class="pure-control-group">
             <label for="agent-target-count"> Agent Target Count </label>
             <input id="agent-target-count" type="text" value="20"></input>
-        </div>
 
-        <div class="pure-control-group">
             <label for="agent-life-duration"> Agent Life Duration </label>
             <input id="agent-life-duration" type="text" value="4"></input>
-        </div>
 
-        <div class="pure-control-group">
             <label for="repopulate-interval"> Repopulate Interval </label>
             <input id="repopulate-interval" type="text" value="2"></input>
-        </div>
 
-        <div class="pure-control-group">
             <label for="log-interval"> Log Interval </label>
             <input id="log-interval" type="text" value="0.2"></input>
-        </div>
 
-        <button type="button" class="pure-button pure-button-primary" id="reconfigure"> GO </button>
-    </form>
+            <label for="fork-factor"> Fork Factor </label>
+            <input id="fork-factor" type="text" value="2"></input>
+
+            <label for="aquisition-rate"> Time Between Aquisitions </label>
+            <input id="aquisition-rate" type="text" value="100"></input>
+
+            <label for="simulation-duration"> Simulation Duration </label>
+            <input id="simulation-duration" type="text" value="40"></input>
+
+            <input id="stacked" type="checkbox" checked> Stacked Graphs</input>
+
+            <button type="button" class="pure-button pure-button-primary" id="reconfigure"> GO </button>
+        </form>
+    </div>
 
     <script src="../dist/bundle.js"></script>
-    <script src="./annotations.js"></script>
+    <script async>
+        var canvas_holder = document.querySelector("#canvas-holder");
+        var canvas = document.querySelector("canvas");
+        canvas.width = canvas_holder.offsetWidth;
+        canvas.height = canvas_holder.offsetHeight;
+    </script>
 </body>
 
 </html>

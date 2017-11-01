@@ -1,5 +1,3 @@
-import { deepFreeze } from './util';
-
 export type Id = number;
 
 export const getId = (() => {
@@ -8,41 +6,53 @@ export const getId = (() => {
 })();
 
 export class Environment {
-    readonly active: Id[];
-    readonly waiting: Id[];
-
-    constructor(active: Id[] = [], waiting: Id[] = []) {
-        this.active = active;
-        this.waiting = waiting;
-        deepFreeze(this);
-    }
+    leased: Id[] = [];
+    idle: Id[] = [];
+    creating: Id[] = [];
 
     totalCount(): number {
-        return this.active.length + this.waiting.length
+        return this.leased.length + this.idle.length
     }
 
-    addToPool(n: Id): Environment {
-        const new_waiting = this.waiting.filter(_ => true);
-        new_waiting.push(n);
-        return new Environment(this.active, new_waiting);
+    addToPool(id: Id) {
+        this.idle.push(id)
     }
 
-    remove(n: Id): Environment {
-        const new_active = this.active.filter(x => x != n);
-        const new_waiting = this.waiting.filter(x => x != n);
-        return new Environment(new_active, new_waiting)
+    start_create(id: Id) {
+        this.creating.push(id);
     }
 
-    aquire(): Environment {
-        const new_active = this.active.filter(_ => true);
-        const new_waiting = this.waiting.filter(_ => true);
+    finish_create(id: Id) {
+        let idx = this.creating.indexOf(id);
+        this.creating.splice(idx, 1);
+        this.idle.push(id);
+    }
 
-        if (new_waiting.length == 0) {
-            console.warn("NONE LEFT");
-            return this;
+    remove(id: Id) {
+        const leasedIdx = this.leased.indexOf(id);
+        if (leasedIdx != -1) {
+            this.leased.splice(leasedIdx, 1);
         } else {
-            new_active.push(new_waiting.pop() as number);
-            return new Environment(new_active, new_waiting);
+            const idleIdx = this.idle.indexOf(id);
+            if (idleIdx != -1) {
+                this.idle.splice(idleIdx, 1);
+            }
+        }
+    }
+
+    isIdle(id: Id): boolean {
+        return this.idle.indexOf(id) != -1;
+    }
+
+    isLeased(id: Id): boolean {
+        return this.leased.indexOf(id) != -1;
+    }
+
+    aquire() {
+        if (this.idle.length == 0) {
+            console.warn("NONE LEFT");
+        } else {
+            this.leased.push(this.idle.pop() as number);
         }
     }
 }

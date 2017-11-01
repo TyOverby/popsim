@@ -6,4 +6,6 @@ export var Constants = {
     repopulate_interval_time: () => 2,
     log_interval_time: () => 0.2,
     random_populate_span_time: () => 2,
+    fork_factor: () => 2,
+    aquisition_rate: () => 0.15,
 };

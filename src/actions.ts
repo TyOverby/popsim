@@ -2,6 +2,7 @@ import { Clock } from './clock';
 import { Environment, getId } from './environment';
 import { Constants } from './constants';
 
+/*
 export function log(clock: Clock, env: Environment): [Clock, Environment] {
     console.log(env);
     return [clock, env];
@@ -34,3 +35,4 @@ export function top_off_rand(clock: Clock, env: Environment): [Clock, Environmen
     return [clock, env]
 }
 
+*/

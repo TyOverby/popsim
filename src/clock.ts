@@ -1,43 +1,50 @@
 import { Environment } from './environment';
-import { deepFreeze } from './util';
 
-export type Action = (clock: Clock, env: Environment) => [Clock, Environment];
+export type Action = () => void;
 
 interface ScheduledAction {
-    readonly timeout: number,
+    timeout: number,
     readonly action: Action,
 }
 
 export class Clock {
-    readonly actions: ScheduledAction[];
-    readonly elapsed: number;
+    readonly actions: ScheduledAction[] = [];
+    elapsed: number = 0;
 
-    constructor(actions: ScheduledAction[] = [], elapsed: number = 0) {
-        this.actions = actions;
-        this.elapsed = elapsed;
-        deepFreeze(this);
+    schedule(timeout: number, action: Action) {
+        let index = -1;
+
+        for (let i = 0; i < this.actions.length; i++) {
+            if (this.actions[i].timeout < timeout) {
+                index = i;
+                break;
+            }
+        }
+
+        if (index === -1) {
+            this.actions.push({ timeout, action });
+        } else {
+            this.actions.splice(index, 0, { timeout, action });
+        }
     }
 
-    schedule(timeout: number, action: Action): Clock {
-        const new_actions = this.actions.filter(_ => true);
-        new_actions.push({ timeout, action });
-        return new Clock(new_actions, this.elapsed)
+    scheduleRepeating(timeout: () => number, action: Action) {
+        this.schedule(timeout(), () => {
+            action();
+            this.scheduleRepeating(timeout, action);
+        });
     }
 
-    scheduleRepeating(timeout: number, action: Action): Clock {
-        const f: Action = (clock: Clock, env: Environment) => action(clock.schedule(timeout, f), env);
-        return this.schedule(timeout, f);
-    }
+    makeProgress() {
+        if (this.actions.length == 0) { return }
 
-    tick(env: Environment): [Clock, Environment] {
-        if (this.actions.length == 0) { return [this, env] }
+        let { timeout, action } = this.actions.pop() as ScheduledAction;
+        for (const remain of this.actions) {
+            remain.timeout -= timeout;
+        }
 
-        const actions_cloned = this.actions.filter(_ => true);
-        actions_cloned.sort((a, b) => a.timeout - b.timeout);
+        this.elapsed += timeout;
 
-        let { timeout, action } = actions_cloned.shift() as ScheduledAction;
-        const result_actions = actions_cloned.map(a => ({action: a.action, timeout: a.timeout - timeout}))
-
-        return action(new Clock(result_actions, this.elapsed + timeout), env);
+        action();
     }
 }
