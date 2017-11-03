@@ -32,17 +32,18 @@ function simulate(duration: number, callback: Callback) {
 
     const topOff = () => {
         const lower_bound_count = config('agent-target-count');
-
-        for (let i = environment.idleCount + environment.creatingCount; i < lower_bound_count; i++) {
-            spawn();
+        const top_off_count = lower_bound_count - (environment.idleCount + environment.creatingCount);
+        const should_top_off = top_off_count > 0;
+        if (should_top_off) {
+            for (let i = 0; i < top_off_count; i++) {
+                spawn();
+            }
         }
-
-    };
-
-    const schedule_stagger = () => {
-        const repop_extra_count = config('stagger-count');
-        for (let i = 0; i < repop_extra_count; i++) {
-            clock.schedule(i, spawn);
+        if (!should_top_off || config('always-staggar')) {
+            const repop_extra_count = config('stagger-count');
+            for (let i = 0; i < repop_extra_count; i++) {
+                clock.schedule(i, spawn);
+            }
         }
     };
 
@@ -53,27 +54,31 @@ function simulate(duration: number, callback: Callback) {
         }
     };
 
-    if (!config('cold-start')) {
-        // starting sim
+    if (config('cold-start')) {
+        // do nothing
+    } else {
         const bound_count = config('agent-target-count');
+        const is_full = config('full-start');
+        const is_staggared = config('staggared-start');
         for (let i = 0; i < bound_count; i++) {
             const life = config('agent-life-duration');
             const id = getId();
             environment.addToPool(id);
-            clock.schedule(life * ((i + 1) / bound_count), () => kill(id));
+
+            if (is_full) {
+                clock.schedule(life, () => kill(id));
+            } else if (is_staggared) {
+                clock.schedule(life * ((i + 1) / bound_count), () => kill(id));
+            } else {
+                throw new Error("NO STARTING CONDITION CHECKED")
+            }
         }
     }
-
 
     log();
     clock.scheduleRepeating(() => config('log-interval'), log);
     clock.scheduleRepeating(() => config('repopulate-interval'), topOff);
     clock.scheduleRepeating(() => config('aquisition-interval'), usage);
-
-    if (config('use-stagger')) {
-        clock.scheduleRepeating(() => config('stagger-interval'), schedule_stagger);
-    }
-
 
     while (true) {
         clock.makeProgress();

@@ -58,22 +58,25 @@
             <label for="aquisition-interval"> Aquisition Interval </label>
             <input id="aquisition-interval" type="text" value="100"></input>
 
+            <label for="stagger-count"> Stagger Count </label>
+            <input id="stagger-count" type="text" value="4"></input>
+
             <label for="simulation-duration"> Simulation Duration </label>
             <input id="simulation-duration" type="text" value="40"></input>
 
-            <label for="stagger-interval"> Stagger Interval </label>
-            <input id="stagger-interval" type="text" value="2"></input>
-
-            <label for="stagger-count"> Stagger Count </label>
-            <input id="stagger-count" type="text" value="2 * config('stagger-interval')"></input>
-
-            <input id="cold-start" type="checkbox"></input>
+            <input id="cold-start" name="start" type="radio"></input>
             <label style="display:inline;" for="cold-start"> Cold Start </label>
+            <br/>
+            <input id="full-start" name="start" type="radio"></input>
+            <label style="display:inline;" for="full-start"> Full Start </label>
+            <br/>
+            <input id="staggared-start" name="start" type="radio" checked></input>
+            <label style="display:inline;" for="staggared-start"> Staggared Start </label>
 
             <br/>
 
-            <input id="use-stagger" type="checkbox" checked></input>
-            <label style="display:inline;" for="use-stagger"> Use Stagger </label>
+            <input id="always-staggar" type="checkbox" ></input>
+            <label style="display:inline;" for="always-staggar"> Always Staggar </label>
 
             <br/>
 

@@ -17298,14 +17298,18 @@ function simulate(duration, callback) {
     };
     var topOff = function () {
         var lower_bound_count = constants_1.default('agent-target-count');
-        for (var i = environment.idleCount + environment.creatingCount; i < lower_bound_count; i++) {
-            spawn();
+        var top_off_count = lower_bound_count - (environment.idleCount + environment.creatingCount);
+        var should_top_off = top_off_count > 0;
+        if (should_top_off) {
+            for (var i = 0; i < top_off_count; i++) {
+                spawn();
+            }
         }
-    };
-    var schedule_stagger = function () {
-        var repop_extra_count = constants_1.default('stagger-count');
-        for (var i = 0; i < repop_extra_count; i++) {
-            clock.schedule(i, spawn);
+        if (!should_top_off || constants_1.default('always-staggar')) {
+            var repop_extra_count = constants_1.default('stagger-count');
+            for (var i = 0; i < repop_extra_count; i++) {
+                clock.schedule(i, spawn);
+            }
         }
     };
     var usage = function () {
@@ -17314,14 +17318,26 @@ function simulate(duration, callback) {
             spawn();
         }
     };
-    if (!constants_1.default('cold-start')) {
-        // starting sim
+    if (constants_1.default('cold-start')) {
+        // do nothing
+    }
+    else {
         var bound_count = constants_1.default('agent-target-count');
+        var is_full = constants_1.default('full-start');
+        var is_staggared = constants_1.default('staggared-start');
         var _loop_1 = function (i) {
             var life = constants_1.default('agent-life-duration');
             var id = environment_1.getId();
             environment.addToPool(id);
-            clock.schedule(life * ((i + 1) / bound_count), function () { return kill(id); });
+            if (is_full) {
+                clock.schedule(life, function () { return kill(id); });
+            }
+            else if (is_staggared) {
+                clock.schedule(life * ((i + 1) / bound_count), function () { return kill(id); });
+            }
+            else {
+                throw new Error("NO STARTING CONDITION CHECKED");
+            }
         };
         for (var i = 0; i < bound_count; i++) {
             _loop_1(i);
@@ -17331,9 +17347,6 @@ function simulate(duration, callback) {
     clock.scheduleRepeating(function () { return constants_1.default('log-interval'); }, log);
     clock.scheduleRepeating(function () { return constants_1.default('repopulate-interval'); }, topOff);
     clock.scheduleRepeating(function () { return constants_1.default('aquisition-interval'); }, usage);
-    if (constants_1.default('use-stagger')) {
-        clock.scheduleRepeating(function () { return constants_1.default('stagger-interval'); }, schedule_stagger);
-    }
     while (true) {
         clock.makeProgress();
         if (clock.elapsed >= duration || clock.actions.length == 0) {
