@@ -1,6 +1,6 @@
 import simulate from './sim';
 import { Chart } from 'chart.js';
-import { Constants } from './constants';
+import config from './constants';
 
 const canvas = document.querySelector("canvas");
 let chart: Chart | null = null;
@@ -33,14 +33,14 @@ function run_simulation(timespan: number) {
                 lineTension: 0,
                 backgroundColor: 'rgba(132, 99, 255, 0.5)',
                 borderColor: 'rgba(0,0,100,1)',
-                borderWidth: 1
+                borderWidth: 2
             }, {
                 label: 'in use',
                 data: use_values,
                 lineTension: 0,
                 backgroundColor: 'rgba(99, 255, 132, 0.5)',
                 borderColor: 'rgba(40,140,70,1)',
-                borderWidth: 1
+                borderWidth: 2
             }, {
                 hidden: true,
                 label: 'being created',
@@ -48,13 +48,13 @@ function run_simulation(timespan: number) {
                 lineTension: 0,
                 backgroundColor: 'rgba(255, 80, 132, 0.1)',
                 borderColor: 'rgba(140,40,70,0.4)',
-                borderWidth: 1
+                borderWidth: 2
             }
             ]
         },
         options: {
             animation: { duration: 0 },
-            elements: { point: { radius: 1.0 } },
+            elements: { point: { radius: 0.0 } },
             responsive: false,
             scales: {
                 xAxes: [{
@@ -70,23 +70,8 @@ function run_simulation(timespan: number) {
 }
 
 
-function bind_property_to_setting(id: string, prop: string) {
-    const element = document.querySelector("#" + id) as HTMLInputElement;
-    const value: string = element.value;
-    (Constants as any)[prop] = () => eval(value);
-}
 
 (document.querySelector("#reconfigure") as HTMLButtonElement).onclick = function () {
-    bind_property_to_setting("agent-creation-duration", "time_to_birth");
-    bind_property_to_setting("agent-target-count", "lower_bound_count");
-    bind_property_to_setting("agent-life-duration", "life_time");
-    bind_property_to_setting("repopulate-interval", "repopulate_interval_time");
-    bind_property_to_setting("log-interval", "log_interval_time");
-    bind_property_to_setting("fork-factor", "fork_factor");
-    bind_property_to_setting("aquisition-rate", "aquisition_rate");
-
-    const simDurationElement = document.querySelector("#simulation-duration") as HTMLInputElement;
-    const simDuration: string = simDurationElement.value;
-
-    run_simulation(eval(simDuration));
+    const simDuration: number = config('simulation-duration');
+    run_simulation(simDuration);
 };

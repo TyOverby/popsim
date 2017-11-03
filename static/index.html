@@ -14,7 +14,8 @@
             grid-gap: 10px;
         }
 
-        label, input[type="checkbox"] {
+        label,
+        input[type="checkbox"] {
             margin-top: 15px !important;
         }
 
@@ -54,13 +55,30 @@
             <label for="fork-factor"> Fork Factor </label>
             <input id="fork-factor" type="text" value="2"></input>
 
-            <label for="aquisition-rate"> Time Between Aquisitions </label>
-            <input id="aquisition-rate" type="text" value="100"></input>
+            <label for="aquisition-interval"> Aquisition Interval </label>
+            <input id="aquisition-interval" type="text" value="100"></input>
 
             <label for="simulation-duration"> Simulation Duration </label>
             <input id="simulation-duration" type="text" value="40"></input>
 
-            <input id="stacked" type="checkbox" checked> Stacked Graphs</input>
+            <label for="stagger-interval"> Stagger Interval </label>
+            <input id="stagger-interval" type="text" value="2"></input>
+
+            <label for="stagger-count"> Stagger Count </label>
+            <input id="stagger-count" type="text" value="2 * config('stagger-interval')"></input>
+
+            <input id="cold-start" type="checkbox"></input>
+            <label style="display:inline;" for="cold-start"> Cold Start </label>
+
+            <br/>
+
+            <input id="use-stagger" type="checkbox" checked></input>
+            <label style="display:inline;" for="use-stagger"> Use Stagger </label>
+
+            <br/>
+
+            <input id="stacked" type="checkbox" checked></input>
+            <label style="display:inline;" for="stacked"> Stacked Graphs </label>
 
             <button type="button" class="pure-button pure-button-primary" id="reconfigure"> GO </button>
         </form>
@@ -72,6 +90,11 @@
         var canvas = document.querySelector("canvas");
         canvas.width = canvas_holder.offsetWidth;
         canvas.height = canvas_holder.offsetHeight;
+
+        var all_labels = document.querySelectorAll("label");
+        for (const label of all_labels) {
+            label.title = label.htmlFor;
+        }
     </script>
 </body>
 

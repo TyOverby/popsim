@@ -1,6 +1,6 @@
 import { Clock } from './clock';
-import { Environment, getId } from './environment';
-import { Constants } from './constants';
+import { Id, Environment, getId } from './environment';
+import config from './constants';
 import * as actions from './actions';
 
 type Callback = (time: number, count_idle: number, count_in_use: number, count_in_flight: number) => void;
@@ -15,7 +15,7 @@ function simulate(duration: number, callback: Callback) {
         environment.leased.length,
         environment.creating.length);
 
-    const kill = (id) => {
+    const kill = (id: Id) => {
         environment.remove(id)
     }
 
@@ -24,39 +24,55 @@ function simulate(duration: number, callback: Callback) {
 
         environment.start_create(id);
 
-        clock.schedule(Constants.time_to_birth(), () => {
+        clock.schedule(config('agent-creation-duration'), () => {
             environment.finish_create(id);
-            clock.schedule(Constants.life_time(), () => kill(id))
+            clock.schedule(config('agent-life-duration'), () => kill(id))
         });
     };
 
     const topOff = () => {
-        for (let i = environment.idleCount + environment.creatingCount; i < Constants.lower_bound_count(); i++) {
+        const lower_bound_count = config('agent-target-count');
+
+        for (let i = environment.idleCount + environment.creatingCount; i < lower_bound_count; i++) {
             spawn();
+        }
+
+    };
+
+    const schedule_stagger = () => {
+        const repop_extra_count = config('stagger-count');
+        for (let i = 0; i < repop_extra_count; i++) {
+            clock.schedule(i, spawn);
         }
     };
 
     const usage = () => {
         environment.aquire();
-        for (let i = 0; i < Constants.fork_factor(); i++) {
+        for (let i = 0; i < config('fork-factor'); i++) {
             spawn();
         }
     };
 
-    // starting sim
-    const bound_count = Constants.lower_bound_count();
-    for (let i = 0; i < bound_count; i++) {
-        const life = Constants.life_time();
-        const id = getId();
-        environment.addToPool(id);
-        clock.schedule(life * ((i + 1) / bound_count), () => kill(id));
-        //clock.schedule(life * Math.random(), () => kill(id));
+    if (!config('cold-start')) {
+        // starting sim
+        const bound_count = config('agent-target-count');
+        for (let i = 0; i < bound_count; i++) {
+            const life = config('agent-life-duration');
+            const id = getId();
+            environment.addToPool(id);
+            clock.schedule(life * ((i + 1) / bound_count), () => kill(id));
+        }
     }
 
+
     log();
-    clock.scheduleRepeating(Constants.log_interval_time, log);
-    clock.scheduleRepeating(Constants.repopulate_interval_time, topOff);
-    clock.scheduleRepeating(Constants.aquisition_rate, usage);
+    clock.scheduleRepeating(() => config('log-interval'), log);
+    clock.scheduleRepeating(() => config('repopulate-interval'), topOff);
+    clock.scheduleRepeating(() => config('aquisition-interval'), usage);
+
+    if (config('use-stagger')) {
+        clock.scheduleRepeating(() => config('stagger-interval'), schedule_stagger);
+    }
 
 
     while (true) {

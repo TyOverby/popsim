@@ -5268,16 +5268,18 @@ helpers.getValueAtIndexOrDefault = helpers.valueAtIndexOrDefault;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Constants = {
-    time_to_birth: function () { return 2; },
-    lower_bound_count: function () { return 20; },
-    life_time: function () { return 4; },
-    repopulate_interval_time: function () { return 2; },
-    log_interval_time: function () { return 0.2; },
-    random_populate_span_time: function () { return 2; },
-    fork_factor: function () { return 2; },
-    aquisition_rate: function () { return 0.15; },
-};
+function config(id) {
+    var element = document.querySelector("#" + id);
+    var value;
+    if (element.type === "text") {
+        value = element.value;
+    }
+    else {
+        value = "" + element.checked;
+    }
+    return eval(value);
+}
+exports.default = config;
 
 
 /***/ }),
@@ -17289,38 +17291,49 @@ function simulate(duration, callback) {
     var spawn = function () {
         var id = environment_1.getId();
         environment.start_create(id);
-        clock.schedule(constants_1.Constants.time_to_birth(), function () {
+        clock.schedule(constants_1.default('agent-creation-duration'), function () {
             environment.finish_create(id);
-            clock.schedule(constants_1.Constants.life_time(), function () { return kill(id); });
+            clock.schedule(constants_1.default('agent-life-duration'), function () { return kill(id); });
         });
     };
     var topOff = function () {
-        for (var i = environment.idleCount + environment.creatingCount; i < constants_1.Constants.lower_bound_count(); i++) {
+        var lower_bound_count = constants_1.default('agent-target-count');
+        for (var i = environment.idleCount + environment.creatingCount; i < lower_bound_count; i++) {
             spawn();
+        }
+    };
+    var schedule_stagger = function () {
+        var repop_extra_count = constants_1.default('stagger-count');
+        for (var i = 0; i < repop_extra_count; i++) {
+            clock.schedule(i, spawn);
         }
     };
     var usage = function () {
         environment.aquire();
-        for (var i = 0; i < constants_1.Constants.fork_factor(); i++) {
+        for (var i = 0; i < constants_1.default('fork-factor'); i++) {
             spawn();
         }
     };
-    // starting sim
-    var bound_count = constants_1.Constants.lower_bound_count();
-    var _loop_1 = function (i) {
-        var life = constants_1.Constants.life_time();
-        var id = environment_1.getId();
-        environment.addToPool(id);
-        clock.schedule(life * ((i + 1) / bound_count), function () { return kill(id); });
-        //clock.schedule(life * Math.random(), () => kill(id));
-    };
-    for (var i = 0; i < bound_count; i++) {
-        _loop_1(i);
+    if (!constants_1.default('cold-start')) {
+        // starting sim
+        var bound_count = constants_1.default('agent-target-count');
+        var _loop_1 = function (i) {
+            var life = constants_1.default('agent-life-duration');
+            var id = environment_1.getId();
+            environment.addToPool(id);
+            clock.schedule(life * ((i + 1) / bound_count), function () { return kill(id); });
+        };
+        for (var i = 0; i < bound_count; i++) {
+            _loop_1(i);
+        }
     }
     log();
-    clock.scheduleRepeating(constants_1.Constants.log_interval_time, log);
-    clock.scheduleRepeating(constants_1.Constants.repopulate_interval_time, topOff);
-    clock.scheduleRepeating(constants_1.Constants.aquisition_rate, usage);
+    clock.scheduleRepeating(function () { return constants_1.default('log-interval'); }, log);
+    clock.scheduleRepeating(function () { return constants_1.default('repopulate-interval'); }, topOff);
+    clock.scheduleRepeating(function () { return constants_1.default('aquisition-interval'); }, usage);
+    if (constants_1.default('use-stagger')) {
+        clock.scheduleRepeating(function () { return constants_1.default('stagger-interval'); }, schedule_stagger);
+    }
     while (true) {
         clock.makeProgress();
         if (clock.elapsed >= duration || clock.actions.length == 0) {
@@ -17584,14 +17597,14 @@ function run_simulation(timespan) {
                     lineTension: 0,
                     backgroundColor: 'rgba(132, 99, 255, 0.5)',
                     borderColor: 'rgba(0,0,100,1)',
-                    borderWidth: 1
+                    borderWidth: 2
                 }, {
                     label: 'in use',
                     data: use_values,
                     lineTension: 0,
                     backgroundColor: 'rgba(99, 255, 132, 0.5)',
                     borderColor: 'rgba(40,140,70,1)',
-                    borderWidth: 1
+                    borderWidth: 2
                 }, {
                     hidden: true,
                     label: 'being created',
@@ -17599,13 +17612,13 @@ function run_simulation(timespan) {
                     lineTension: 0,
                     backgroundColor: 'rgba(255, 80, 132, 0.1)',
                     borderColor: 'rgba(140,40,70,0.4)',
-                    borderWidth: 1
+                    borderWidth: 2
                 }
             ]
         },
         options: {
             animation: { duration: 0 },
-            elements: { point: { radius: 1.0 } },
+            elements: { point: { radius: 0.0 } },
             responsive: false,
             scales: {
                 xAxes: [{
@@ -17619,22 +17632,9 @@ function run_simulation(timespan) {
         }
     });
 }
-function bind_property_to_setting(id, prop) {
-    var element = document.querySelector("#" + id);
-    var value = element.value;
-    constants_1.Constants[prop] = function () { return eval(value); };
-}
 document.querySelector("#reconfigure").onclick = function () {
-    bind_property_to_setting("agent-creation-duration", "time_to_birth");
-    bind_property_to_setting("agent-target-count", "lower_bound_count");
-    bind_property_to_setting("agent-life-duration", "life_time");
-    bind_property_to_setting("repopulate-interval", "repopulate_interval_time");
-    bind_property_to_setting("log-interval", "log_interval_time");
-    bind_property_to_setting("fork-factor", "fork_factor");
-    bind_property_to_setting("aquisition-rate", "aquisition_rate");
-    var simDurationElement = document.querySelector("#simulation-duration");
-    var simDuration = simDurationElement.value;
-    run_simulation(eval(simDuration));
+    var simDuration = constants_1.default('simulation-duration');
+    run_simulation(simDuration);
 };
 
 
