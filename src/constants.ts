@@ -1,3 +1,5 @@
+export const pm = (x: number) => (Math.random() - 0.5) * 2 * x;
+
 export default function config(id: string): any {
     const element = document.querySelector("#" + id) as HTMLInputElement;
     let value: string;
@@ -7,6 +9,7 @@ export default function config(id: string): any {
     } else {
         value = "" + element.checked;
     }
+
 
     return eval(value);
 }

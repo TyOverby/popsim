@@ -9,6 +9,11 @@ export class Environment {
     leased: Id[] = [];
     idle: Id[] = [];
     creating: Id[] = [];
+    on_fail: () => void;
+
+    constructor(fail_callback: () => void) {
+        this.on_fail = fail_callback;
+    }
 
     get leasedCount(): number {
         return this.leased.length;
@@ -56,11 +61,14 @@ export class Environment {
         return this.leased.indexOf(id) != -1;
     }
 
-    aquire() {
-        if (this.idle.length == 0) {
-            console.warn("NONE LEFT");
+    aquire(): Id {
+        const env = this.idle.pop();
+        if (env === undefined) {
+            this.on_fail();
+            return -1;
         } else {
-            this.leased.push(this.idle.pop() as number);
+            this.leased.push(env);
+            return env;
         }
     }
 }

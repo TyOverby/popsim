@@ -1,12 +1,13 @@
 import { Clock } from './clock';
 import { Id, Environment, getId } from './environment';
-import config from './constants';
-import * as actions from './actions';
+import config, { pm } from './constants';
+import { deltas } from './traffic';
 
 type Callback = (time: number, count_idle: number, count_in_use: number, count_in_flight: number) => void;
 
 function simulate(duration: number, callback: Callback) {
-    const environment = new Environment();
+    let failed = 0;
+    const environment = new Environment(() => failed += 1);
     const clock = new Clock();
 
     const log = () => callback(
@@ -26,29 +27,33 @@ function simulate(duration: number, callback: Callback) {
 
         clock.schedule(config('agent-creation-duration'), () => {
             environment.finish_create(id);
-            clock.schedule(config('agent-life-duration'), () => kill(id))
+            clock.schedule(config('agent-life-duration'), () => {
+                if (!environment.isLeased(id) ){
+                    kill(id)
+                }
+            })
         });
     };
 
     const topOff = () => {
         const lower_bound_count = config('agent-target-count');
-        const top_off_count = lower_bound_count - (environment.idleCount + environment.creatingCount);
+        const top_off_count = lower_bound_count - (environment.idleCount + environment.creatingCount + environment.leasedCount);
         const should_top_off = top_off_count > 0;
         if (should_top_off) {
             for (let i = 0; i < top_off_count; i++) {
                 spawn();
             }
-        }
-        if (!should_top_off || config('always-stagger')) {
-            const repop_extra_count = config('stagger-count');
-            for (let i = 0; i < repop_extra_count; i++) {
-                clock.schedule(i, spawn);
+        } else {
+            const defaultLifespan = config('agent-life-duration');
+            for (let i = 0; i < defaultLifespan / 4; i++) {
+                clock.schedule((i + 1) * 2, spawn);
             }
         }
     };
 
-    const usage = () => {
-        environment.aquire();
+    const lease = () => {
+        const id = environment.aquire();
+        clock.schedule(config('agent-lease-duration'), () => kill(id));
         for (let i = 0; i < config('fork-factor'); i++) {
             spawn();
         }
@@ -78,11 +83,20 @@ function simulate(duration: number, callback: Callback) {
     log();
     clock.scheduleRepeating(() => config('log-interval'), log);
     clock.scheduleRepeating(() => config('repopulate-interval'), topOff);
-    clock.scheduleRepeating(() => config('aquisition-interval'), usage);
+    clock.scheduleRepeating(() => config('aquisition-interval'), lease);
+    if (config('use-traffic')) {
+        for (const ts of deltas) {
+            clock.schedule(ts, lease);
+        }
+    }
 
     while (true) {
         clock.makeProgress();
         if (clock.elapsed >= duration || clock.actions.length == 0) {
+            const floater = document.querySelector("#floater");
+            if (floater) {
+                floater.innerHTML = `${failed} failed`;
+            }
             return;
         }
     }

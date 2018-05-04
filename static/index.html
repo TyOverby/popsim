@@ -28,41 +28,50 @@
             width: auto;
             height: auto;
         }
+        #floater {
+            position: absolute;
+            z-index: 10;
+            background: rgba(255, 255, 255, 100);
+            padding: 20px;
+        }
     </style>
 </head>
 
 <body>
+    <div id="floater">
+
+    </div>
     <div id="container">
         <div id="canvas-holder">
             <canvas></canvas>
         </div>
         <form class="pure-form pure-form-stacked">
             <label for="agent-creation-duration"> Agent Creation Duration </label>
-            <input id="agent-creation-duration" type="text" value="2.1"></input>
+            <input id="agent-creation-duration" type="text" value="9"></input>
 
             <label for="agent-target-count"> Agent Target Count </label>
             <input id="agent-target-count" type="text" value="20"></input>
 
             <label for="agent-life-duration"> Agent Life Duration </label>
-            <input id="agent-life-duration" type="text" value="10"></input>
+            <input id="agent-life-duration" type="text" value="11"></input>
+
+            <label for="agent-lease-duration"> Agent Lease Duration </label>
+            <input id="agent-lease-duration" type="text" value="5"></input>
 
             <label for="repopulate-interval"> Repopulate Interval </label>
-            <input id="repopulate-interval" type="text" value="2"></input>
+            <input id="repopulate-interval" type="text" value="1"></input>
 
             <label for="log-interval"> Log Interval </label>
-            <input id="log-interval" type="text" value="0.2"></input>
+            <input id="log-interval" type="text" value="2"></input>
 
             <label for="fork-factor"> Fork Factor </label>
             <input id="fork-factor" type="text" value="2"></input>
 
             <label for="aquisition-interval"> Aquisition Interval </label>
-            <input id="aquisition-interval" type="text" value="100"></input>
-
-            <label for="stagger-count"> Stagger Count </label>
-            <input id="stagger-count" type="text" value="4"></input>
+            <input id="aquisition-interval" type="text" value="10000"></input>
 
             <label for="simulation-duration"> Simulation Duration </label>
-            <input id="simulation-duration" type="text" value="40"></input>
+            <input id="simulation-duration" type="text" value="360"></input>
 
             <input id="cold-start" name="start" type="radio"></input>
             <label style="display:inline;" for="cold-start"> Cold Start </label>
@@ -82,6 +91,11 @@
 
             <input id="stacked" type="checkbox" checked></input>
             <label style="display:inline;" for="stacked"> Stacked Graphs </label>
+
+            <br/>
+
+            <input id="use-traffic" type="checkbox" checked></input>
+            <label style="display:inline;" for="use-traffic"> Use Traffic </label>
 
             <button type="button" class="pure-button pure-button-primary" id="reconfigure"> GO </button>
         </form>

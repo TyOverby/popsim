@@ -42,7 +42,6 @@ function run_simulation(timespan: number) {
                 borderColor: 'rgba(40,140,70,1)',
                 borderWidth: 2
             }, {
-                hidden: true,
                 label: 'being created',
                 data: in_flight,
                 lineTension: 0,
