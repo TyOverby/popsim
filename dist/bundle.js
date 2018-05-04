@@ -17305,7 +17305,7 @@ function simulate(duration, callback) {
                 spawn();
             }
         }
-        if (!should_top_off || constants_1.default('always-staggar')) {
+        if (!should_top_off || constants_1.default('always-stagger')) {
             var repop_extra_count = constants_1.default('stagger-count');
             for (var i = 0; i < repop_extra_count; i++) {
                 clock.schedule(i, spawn);
@@ -17324,7 +17324,7 @@ function simulate(duration, callback) {
     else {
         var bound_count = constants_1.default('agent-target-count');
         var is_full = constants_1.default('full-start');
-        var is_staggared = constants_1.default('staggared-start');
+        var is_staggered = constants_1.default('staggered-start');
         var _loop_1 = function (i) {
             var life = constants_1.default('agent-life-duration');
             var id = environment_1.getId();
@@ -17332,7 +17332,7 @@ function simulate(duration, callback) {
             if (is_full) {
                 clock.schedule(life, function () { return kill(id); });
             }
-            else if (is_staggared) {
+            else if (is_staggered) {
                 clock.schedule(life * ((i + 1) / bound_count), function () { return kill(id); });
             }
             else {

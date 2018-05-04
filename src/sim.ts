@@ -39,7 +39,7 @@ function simulate(duration: number, callback: Callback) {
                 spawn();
             }
         }
-        if (!should_top_off || config('always-staggar')) {
+        if (!should_top_off || config('always-stagger')) {
             const repop_extra_count = config('stagger-count');
             for (let i = 0; i < repop_extra_count; i++) {
                 clock.schedule(i, spawn);
@@ -59,7 +59,7 @@ function simulate(duration: number, callback: Callback) {
     } else {
         const bound_count = config('agent-target-count');
         const is_full = config('full-start');
-        const is_staggared = config('staggared-start');
+        const is_staggered = config('staggered-start');
         for (let i = 0; i < bound_count; i++) {
             const life = config('agent-life-duration');
             const id = getId();
@@ -67,7 +67,7 @@ function simulate(duration: number, callback: Callback) {
 
             if (is_full) {
                 clock.schedule(life, () => kill(id));
-            } else if (is_staggared) {
+            } else if (is_staggered) {
                 clock.schedule(life * ((i + 1) / bound_count), () => kill(id));
             } else {
                 throw new Error("NO STARTING CONDITION CHECKED")
