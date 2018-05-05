@@ -8,7 +8,7 @@ interface ScheduledAction {
 }
 
 export class Clock {
-    readonly actions: ScheduledAction[] = [];
+    actions: ScheduledAction[] = [];
     elapsed: number = 0;
 
     schedule(timeout: number, action: Action) {
@@ -33,6 +33,10 @@ export class Clock {
             action();
             this.scheduleRepeating(timeout, action);
         });
+    }
+
+    stop() {
+        this.actions = [];
     }
 
     makeProgress() {

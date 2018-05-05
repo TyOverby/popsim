@@ -62,13 +62,14 @@ export class Environment {
     }
 
     aquire(): Id {
-        const env = this.idle.pop();
-        if (env === undefined) {
+        if (this.idle.length == 0) {
             this.on_fail();
             return -1;
-        } else {
-            this.leased.push(env);
-            return env;
         }
+
+        const middle = Math.floor(this.idle.length / 2);
+        const [env] = this.idle.splice(middle, 1);
+        this.leased.push(env);
+        return env;
     }
 }

@@ -5268,7 +5268,6 @@ helpers.getValueAtIndexOrDefault = helpers.valueAtIndexOrDefault;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.pm = function (x) { return (Math.random() - 0.5) * 2 * x; };
 function config(id) {
     var element = document.querySelector("#" + id);
     var value;
@@ -5278,6 +5277,7 @@ function config(id) {
     else {
         value = "" + element.checked;
     }
+    var pm = function (x) { return (Math.random() - 0.5) * 2 * x; };
     return eval(value);
 }
 exports.default = config;
@@ -17287,6 +17287,9 @@ function simulate(duration, callback) {
     var failed = 0;
     var environment = new environment_1.Environment(function () { return failed += 1; });
     var clock = new clock_1.Clock();
+    clock.schedule(duration, function () {
+        clock.stop();
+    });
     var log = function () { return callback(clock.elapsed, environment.idle.length, environment.leased.length, environment.creating.length); };
     var kill = function (id) {
         environment.remove(id);
@@ -17493,6 +17496,9 @@ var Clock = /** @class */ (function () {
             _this.scheduleRepeating(timeout, action);
         });
     };
+    Clock.prototype.stop = function () {
+        this.actions = [];
+    };
     Clock.prototype.makeProgress = function () {
         if (this.actions.length == 0) {
             return;
@@ -17579,15 +17585,14 @@ var Environment = /** @class */ (function () {
         return this.leased.indexOf(id) != -1;
     };
     Environment.prototype.aquire = function () {
-        var env = this.idle.pop();
-        if (env === undefined) {
+        if (this.idle.length == 0) {
             this.on_fail();
             return -1;
         }
-        else {
-            this.leased.push(env);
-            return env;
-        }
+        var middle = Math.floor(this.idle.length / 2);
+        var env = this.idle.splice(middle, 1)[0];
+        this.leased.push(env);
+        return env;
     };
     return Environment;
 }());

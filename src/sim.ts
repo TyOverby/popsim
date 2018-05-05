@@ -1,6 +1,6 @@
 import { Clock } from './clock';
 import { Id, Environment, getId } from './environment';
-import config, { pm } from './constants';
+import config from './constants';
 import { deltas } from './traffic';
 
 type Callback = (time: number, count_idle: number, count_in_use: number, count_in_flight: number) => void;
@@ -9,6 +9,9 @@ function simulate(duration: number, callback: Callback) {
     let failed = 0;
     const environment = new Environment(() => failed += 1);
     const clock = new Clock();
+    clock.schedule(duration, () => {
+        clock.stop();
+    });
 
     const log = () => callback(
         clock.elapsed,
@@ -28,7 +31,7 @@ function simulate(duration: number, callback: Callback) {
         clock.schedule(config('agent-creation-duration'), () => {
             environment.finish_create(id);
             clock.schedule(config('agent-life-duration'), () => {
-                if (!environment.isLeased(id) ){
+                if (!environment.isLeased(id)) {
                     kill(id)
                 }
             })
